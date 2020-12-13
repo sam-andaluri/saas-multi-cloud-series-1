@@ -19,18 +19,6 @@ data "aws_region" "current" {}
 
 data "aws_caller_identity" "current" {}
 
-# MANUAL step: Create ECR repository as this is one time setup.
-# data "aws_ecr_repository" "current" {
-#   name = "saas-react-app"
-# }
-
-# MANUAL step: Store the github token in SSM Parameter store as this is one time setup.
-
-# data "aws_ssm_parameter" "current" {
-#   name = "manning-saas-multi-cloud-react-app-build"
-# }
-
-
 # A shared secret between GitHub and AWS that allows AWS
 # CodePipeline to authenticate the request came from GitHub.
 locals {
@@ -231,34 +219,4 @@ resource "aws_codebuild_project" "saas-app-image-build" {
   }
 
 }
-
-# resource "aws_codepipeline_webhook" "saas-app-pipeline-hook" {
-#   name            = "saas-app-pipeline-hook"
-#   authentication  = "GITHUB_HMAC"
-#   target_action   = "Source"
-#   target_pipeline = aws_codepipeline.codepipeline.name
-
-#   authentication_configuration {
-#     secret_token = local.webhook_secret
-#   }
-
-#   filter {
-#     json_path    = "$.ref"
-#     match_equals = "refs/heads/{Branch}"
-#   }
-# }
-
-# # Wire the CodePipeline webhook into a GitHub repository.
-# resource "github_repository_webhook" "saas-app-github-hook" {
-#   repository = var.github_repo
-
-#   configuration {
-#     url          = aws_codepipeline_webhook.saas-app-pipeline-hook.url
-#     content_type = "json"
-#     insecure_ssl = true
-#     secret       = local.webhook_secret
-#   }
-
-#   events = ["push"]
-# }
 
