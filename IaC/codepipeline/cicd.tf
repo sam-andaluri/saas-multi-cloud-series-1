@@ -1,3 +1,29 @@
+
+variable "github_user" {
+  default = "github-user"
+}
+
+variable "github_repo" {
+  default = "github_repo"
+}
+variable "github_branch" {
+  default = "master"
+}
+variable "github_token" {
+  default = "12345"
+}
+
+variable "ecr_repo" {
+  default = "ecr_repo"
+}
+variable "account_id" {
+  default = "1234567890"
+}
+
+variable "region" {
+  default = "us-east-2"
+}
+
 provider "aws" {
   region = var.region
 }
@@ -27,8 +53,8 @@ locals {
 
 # AWS CodePipeLine to download source and build
 resource "aws_codepipeline" "codepipeline" {
-  name     = "saas-app-pipeline"
-  
+  name = "${var.ecr_repo}-pipeline"
+
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
@@ -60,12 +86,12 @@ resource "aws_codepipeline" "codepipeline" {
     name = "Build"
 
     action {
-      name             = "Build"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
-      version          = "1"
+      name            = "Build"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      input_artifacts = ["source_output"]
+      version         = "1"
 
       configuration = {
         ProjectName = aws_codebuild_project.saas-app-image-build.name
@@ -76,13 +102,14 @@ resource "aws_codepipeline" "codepipeline" {
 
 # This is not used but is required for code pipleline
 resource "aws_s3_bucket" "codepipeline_bucket" {
-  bucket = "${var.github_repo}-${random_string.suffix.result}"
-  acl    = "private"
+  bucket        = "${var.github_repo}-${random_string.suffix.result}"
+  acl           = "private"
+  force_destroy = true
 }
 
 # Merged IAM Role for CodePipeLine and CodeBuild 
 resource "aws_iam_role" "codepipeline_role" {
-  name = "saas-app-codepipeline_role"
+  name = "${var.ecr_repo}_role"
 
   assume_role_policy = <<EOF
 {
@@ -105,7 +132,7 @@ EOF
 
 # Merged IAM Role policy for CodePipeLine and CodeBuild
 resource "aws_iam_role_policy" "codepipeline_policy" {
-  name = "saas-app-codepipeline_policy"
+  name = "${var.ecr_repo}_policy"
   role = aws_iam_role.codepipeline_role.id
 
   policy = <<EOF
@@ -183,9 +210,9 @@ EOF
 
 # CodeBuild project to build source. buildspec.yml is includes in source.
 resource "aws_codebuild_project" "saas-app-image-build" {
-  name          = "saas-app-image-build"
-  description   = "Terraform SaaS React App Image Build"
-  service_role  = aws_iam_role.codepipeline_role.id
+  name         = "${var.ecr_repo}-build"
+  description  = "Terraform SaaS React App Image Build"
+  service_role = aws_iam_role.codepipeline_role.id
 
   artifacts {
     type = "CODEPIPELINE"
@@ -214,8 +241,8 @@ resource "aws_codebuild_project" "saas-app-image-build" {
   }
 
   source {
-    type            = "CODEPIPELINE"
-    buildspec       = "buildspec.yml"
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec.yml"
   }
 
 }

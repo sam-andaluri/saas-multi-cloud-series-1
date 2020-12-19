@@ -1,1 +1,9 @@
-IaC/codepipeline/myvars.tf
+
+IaC/codepipeline/provider/*
+IaC/codepipeline/tenant/*
+IaC/kubernetes/.terraform/*
+IaC/kubernetes/.terraform.lock.hcl
+IaC/kubernetes/terraform.tfstate
+IaC/kubernetes/terraform.tfstate.backup
+IaC/kubernetes/.DS_Store
+UI/provider/.idea/*
