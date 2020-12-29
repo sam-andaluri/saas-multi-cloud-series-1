@@ -24,6 +24,10 @@ variable "region" {
   default = "us-east-2"
 }
 
+variable "eks_cluster_name" {
+  default = ""
+}
+
 provider "aws" {
   region = var.region
 }
@@ -121,7 +125,8 @@ resource "aws_iam_role" "codepipeline_role" {
         "Service": [
           "codebuild.amazonaws.com",
           "codepipeline.amazonaws.com"
-        ]
+        ],
+        "AWS": "arn:aws:iam::${var.account_id}:root"
       },
       "Action": "sts:AssumeRole"
     }
@@ -154,6 +159,11 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
     },
     {
       "Effect": "Allow",
+      "Action": ["sts:AssumeRole"],
+      "Resource": "${aws_iam_role.codepipeline_role.arn}"
+    },
+    {
+      "Effect": "Allow",
       "Action": [
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
@@ -177,7 +187,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "ecr:UploadLayerPart",
         "ecr:CompleteLayerUpload",
         "ecr:PutImage",
-        "eks:DescribeCluster",
+        "eks:Describe*",
         "eks:ListClusters",
         "codecommit:CancelUploadArchive",
         "codecommit:GetBranch",
@@ -185,7 +195,12 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "codecommit:GetUploadArchiveStatus",
         "codecommit:UploadArchive",
         "codebuild:BatchGetBuilds",
-        "codebuild:StartBuild"
+        "codebuild:StartBuild",
+        "ssm:GetParameterHistory",
+        "ssm:GetParametersByPath",
+        "ssm:GetParameters",
+        "ssm:GetParameter",
+        "ssm:DescribeParameters"
       ],
       "Resource": "*"
     },
@@ -237,6 +252,16 @@ resource "aws_codebuild_project" "saas-app-image-build" {
     environment_variable {
       name  = "AWS_ACCOUNT_ID"
       value = var.account_id
+    }
+
+    environment_variable {
+      name  = "PIPELINE_ROLE_ARN"
+      value = aws_iam_role.codepipeline_role.arn
+    }
+
+    environment_variable {
+      name  = "EKS_CLUSTER_NAME"
+      value = var.eks_cluster_name
     }
   }
 
