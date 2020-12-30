@@ -1,11 +1,7 @@
 
 IaC/codepipeline/provider/*
 IaC/codepipeline/tenant/*
-IaC/codepipeline/backend/.terraform/*
-IaC/codepipeline/backend/.terraform.lock.hcl
-IaC/codepipeline/backend/terraform.tfstate
-IaC/codepipeline/backend/terraform.tfstate.backup
-IaC/codepipeline/backend/.DS_Store
+IaC/codepipeline/backend/*
 IaC/codepipeline/.terraform/*
 IaC/codepipeline/.terraform.lock.hcl
 IaC/codepipeline/terraform.tfstate
