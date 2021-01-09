@@ -144,8 +144,8 @@ resource "aws_eks_node_group" "saas-eks-node" {
   }
   instance_types = ["t3.large"]
   scaling_config {
-    desired_size = 6
-    max_size     = 7
+    desired_size = 2
+    max_size     = 2
     min_size     = 1
   }
 
