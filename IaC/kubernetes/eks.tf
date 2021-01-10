@@ -88,7 +88,7 @@ resource "aws_eks_cluster" "saas-eks" {
 # CloudWatch logs for cluster
 resource "aws_cloudwatch_log_group" "saas-eks-cw-log-group" {
   name              = "/aws/eks/saas-eks/cluster"
-  retention_in_days = 7
+  retention_in_days = 1
 }
 
 # --- Nodes ---
