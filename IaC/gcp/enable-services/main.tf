@@ -2,7 +2,7 @@ module "project-services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "4.0.0"
 
-  project_id  = "sam-manning-s1-p2p3"
+  project_id  = "my-project"
 
   activate_apis = [
       "networkservices.googleapis.com",
