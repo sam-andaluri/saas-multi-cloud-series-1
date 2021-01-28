@@ -19,3 +19,6 @@ IaC/gcp/kubernetes/terraform*
 IaC/gcp/enable-services/.DS_Store
 IaC/gcp/enable-services/.terraform*
 IaC/gcp/enable-services/terraform*
+IaC/gcp/gce-fluentd/.DS_Store
+IaC/gcp/gce-fluentd/.terraform*
+IaC/gcp/gce-fluentd/terraform*
