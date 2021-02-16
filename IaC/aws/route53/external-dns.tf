@@ -44,16 +44,13 @@ data "aws_route53_zone" "saas-tenant" {
 
 # External DNS Template that substitute tenant Route53 zone
 data "template_file" "external-dns" {
-  template = "${file("${path.module}/external-dns.yaml")}"
-  vars = {
-    tenant-zone-id = data.aws_route53_zone.saas-tenant.zone_id
-  }
+  template = templatefile("${path.module}/external-dns.yaml", {tenant-zone-id = data.aws_route53_zone.saas-tenant.zone_id})
 }
 
 # Deploy external-dns template if there is a change
 resource "null_resource" "depoly-if-changed" {
   triggers = {
-    manifest_sha1 = "${sha1("${data.template_file.external-dns.rendered}")}"
+    manifest_sha1 = sha1(data.template_file.external-dns.rendered)
   }
 
   provisioner "local-exec" {
@@ -61,7 +58,8 @@ resource "null_resource" "depoly-if-changed" {
   }
 }
 
-# Test rendered output
-# output "template-out" {
-#   value = data.template_file.external-dns.rendered
-# }
+#Test rendered output
+output "template-out" {
+  value = data.template_file.external-dns.rendered
+}
+

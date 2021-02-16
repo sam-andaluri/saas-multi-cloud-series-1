@@ -1,0 +1,102 @@
+---
+- name: Create OS Disk
+  delegate_to: localhost
+  gcp_compute_disk:
+    name: "{{ hostname }}-os-disk"
+    size_gb: "{{ gce_os_disk_size_gb }}"
+    source_image: "{{ gce_image }}"
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_auth_kind }}"
+    service_account_file: "{{ ansible_env.HOME }}/.ssh/{{ gcp_service_account }}.json"
+    state: present
+    scopes:
+      - https://www.googleapis.com/auth/compute
+  register: gce_os_disk
+
+- name: Create Extra Disk(s)
+  delegate_to: localhost
+  gcp_compute_disk:
+    name: "{{ hostname }}-{{ item.name }}"
+    size_gb: "{{ item.size_gb }}"
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_auth_kind }}"
+    service_account_file: "{{ ansible_env.HOME }}/.ssh/{{ gcp_service_account }}.json"
+    state: present
+    scopes:
+      - https://www.googleapis.com/auth/compute
+  register: extra_disks
+  loop:
+    "{{ gce_vm_extra_disks }}"
+
+- name: Create IP Address
+  delegate_to: localhost
+  gcp_compute_address:
+    name: "{{ hostname }}-ip"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_auth_kind }}"
+    service_account_file: "{{ ansible_env.HOME }}/.ssh/{{ gcp_service_account }}.json"
+    state: present
+    scopes:
+      - https://www.googleapis.com/auth/compute
+  register: address
+
+- name: Create GCE VM instance
+  delegate_to: localhost
+  gcp_compute_instance:
+    name: "{{ hostname }}"
+    machine_type: "{{ gce_machine_type }}"
+    disks:
+      "{{ gce_vm_disk_indexes }}"
+    metadata:
+      ssh-keys: "{{ gce_vm_ssh_keys }}"
+    network_interfaces:
+      - network:
+          selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_network_project }}/global/networks/{{ gcp_network }}"
+        access_configs:
+          - name: External NAT
+            nat_ip: "{{ address }}"
+            type: ONE_TO_ONE_NAT
+        subnetwork:
+          selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_network_project }}/regions/{{ gcp_region }}/subnetworks/{{ gcp_subnetwork }}"
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_auth_kind }}"
+    service_accounts:
+      - { email: "{{ service_account_email }}", scopes: ["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/logging.write"] }
+    service_account_file: "{{ ansible_env.HOME }}/.ssh/{{ gcp_service_account }}.json"
+    tags:
+      items:
+        "{{ gce_vm_tags }}"
+    state: present
+    scopes:
+      - https://www.googleapis.com/auth/compute
+  register: gce_instance
+
+- name: Create/Update DNS Record
+  delegate_to: localhost
+  gcp_dns_resource_record_set:
+    name: "{{ gcp_dns_hostname }}.{{ gcp_dns_domainname }}."
+    managed_zone: "{{ gcp_dns_zone }}"
+    type: A
+    ttl: 300
+    target:
+      - "{{ gce_instance.networkInterfaces.0['networkIP'] }}"
+    project: "{{ gcp_dns_project }}"
+    auth_kind: "{{ gcp_auth_kind }}"
+    service_account_file: "{{ ansible_env.HOME }}/.ssh/{{ gcp_service_account }}.json"
+    state: present
+  when: gce_instance.networkInterfaces is defined
+
+- name: Set GCE Labels
+  delegate_to: localhost
+  gce_labels:
+    project_id: "{{ gcp_project }}"
+    credentials_file: "{{ ansible_env.HOME }}/.ssh/{{ gcp_service_account }}.json"
+    resource_url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instances/{{ hostname }}"
+    labels:
+      project: "{{ gcp_project }}"
+      not_gke: ""
+    state: present

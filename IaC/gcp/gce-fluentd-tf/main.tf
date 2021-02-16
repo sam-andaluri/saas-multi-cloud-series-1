@@ -11,6 +11,10 @@ variable "zone" {
   description = "zone"
 }
 
+variable "instance-name" {
+  description = " GCE Instance name"
+}
+
 variable "service_account_roles" {
   description = "Additional roles to be added to the service account."
   type        = list(string)
@@ -46,11 +50,15 @@ resource "google_project_iam_member" "service_account-roles" {
 }
 
 resource "google_compute_instance" "default" {
-  name         = "fluentd-test"
+  count = 2
+  name = "${var.instance-name}-${count.index}"
   machine_type = "n1-standard-1"
   zone         = "us-central1-a"
 
-  tags = ["name", "fluentd"]
+  tags = [
+    "http-server",
+    "https-server",
+  ]
 
   boot_disk {
     initialize_params {
@@ -79,9 +87,12 @@ resource "google_compute_instance" "default" {
 curl -sSO https://dl.google.com/cloudagents/add-logging-agent-repo.sh
 sudo bash add-logging-agent-repo.sh
 sudo apt-get update
+sudo apt-get install -y nginx
 sudo apt-get install -y google-fluentd
 sudo apt-get install -y google-fluentd-catch-all-config
 sudo service google-fluentd restart
+sudo systemctl enable nginx
+sudo systemctl restart nginx
  SCRIPT
 
   service_account {
