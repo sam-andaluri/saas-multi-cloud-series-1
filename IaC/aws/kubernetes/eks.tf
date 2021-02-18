@@ -159,6 +159,17 @@ resource "aws_eks_node_group" "saas-eks-node" {
   ]
 }
 
+resource "null_resource" "misc" {
+
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --name ${aws_eks_cluster.saas-eks.name} --region us-east-2"
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl create namespace argocd; kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
+  }
+}
+
 # Outputs
 output "endpoint" {
   value = aws_eks_cluster.saas-eks.endpoint

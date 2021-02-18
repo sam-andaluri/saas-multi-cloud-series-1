@@ -3,6 +3,10 @@ provider "aws" {
   region = "us-east-2"
 }
 
+variable "domain_name" {
+   description = "domain name"
+}
+
 # IAM Policy to give external-dns pod to make changes in Route53
 resource "aws_iam_policy" "external-dns-policy" {
   name = "K8sExternalDNSPolicy"
@@ -37,14 +41,14 @@ EOF
 }
 
 # Lookup zone in Route53
-data "aws_route53_zone" "saas-tenant" {
-  name         = "saas-tenant.cloud."
+data "aws_route53_zone" "zone" {
+  name         = var.domain_name
   private_zone = false
 }
 
-# External DNS Template that substitute tenant Route53 zone
+# External DNS Template that substitute Route53 zone
 data "template_file" "external-dns" {
-  template = templatefile("${path.module}/external-dns.yaml", {tenant-zone-id = data.aws_route53_zone.saas-tenant.zone_id})
+  template = templatefile("${path.module}/external-dns.yaml", {zone-id = data.aws_route53_zone.zone.zone_id})
 }
 
 # Deploy external-dns template if there is a change
