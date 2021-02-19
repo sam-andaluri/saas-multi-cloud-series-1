@@ -7,6 +7,9 @@ IaC/aws/codepipeline/.DS_Store
 IaC/aws/kubernetes/.terraform*
 IaC/aws/kubernetes/terraform*
 IaC/aws/kubernetes/.DS_Store
+IaC/aws/client-vpn/.terraform*
+IaC/aws/client-vpn/terraform*
+IaC/aws/client-vpn/.DS_Store
 IaC/aws/route53/.terraform*
 IaC/aws/route53/terraform*
 IaC/aws/route53/.DS_Store

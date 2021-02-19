@@ -7,9 +7,17 @@ variable "domain_name" {
    description = "domain name"
 }
 
+resource "random_string" "suffix" {
+  length  = 5
+  upper   = false
+  lower   = true
+  number  = false
+  special = false
+}
+
 # IAM Policy to give external-dns pod to make changes in Route53
 resource "aws_iam_policy" "external-dns-policy" {
-  name = "K8sExternalDNSPolicy"
+  name = "K8sExternalDNSPolicy-${random_string.suffix.result}"
   description = "Allows EKS nodes to modify Route53 to support ExternalDNS."
 
   policy = <<EOF
@@ -48,7 +56,7 @@ data "aws_route53_zone" "zone" {
 
 # External DNS Template that substitute Route53 zone
 data "template_file" "external-dns" {
-  template = templatefile("${path.module}/external-dns.yaml", {zone-id = data.aws_route53_zone.zone.zone_id})
+  template = templatefile("${path.module}/external-dns.yaml", {zone-id = data.aws_route53_zone.zone.zone_id, suffix = random_string.suffix.result})
 }
 
 # Deploy external-dns template if there is a change
