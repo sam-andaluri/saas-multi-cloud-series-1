@@ -1,3 +1,5 @@
+.DS_Store
+IaC/aws/.DS_Store
 IaC/aws/codepipeline/provider/*
 IaC/aws/codepipeline/tenant/*
 IaC/aws/codepipeline/backend/*
@@ -13,9 +15,12 @@ IaC/aws/client-vpn/.DS_Store
 IaC/aws/route53/.terraform*
 IaC/aws/route53/terraform*
 IaC/aws/route53/.DS_Store
+IaC/aws/route53/provider/*
+IaC/aws/route53/tenant/*
 IaC/aws/tgw/.terraform*
 IaC/aws/tgw/terraform*
 IaC/aws/tgw/.DS_Store
+Iac/gcp/.DS_Store
 IaC/gcp/kubernetes/.DS_Store
 IaC/gcp/kubernetes/.terraform*
 IaC/gcp/kubernetes/terraform*
