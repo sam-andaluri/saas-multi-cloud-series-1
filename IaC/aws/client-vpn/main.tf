@@ -1,5 +1,9 @@
-# Follow this to create certs
+# AWS Client VPN using mutual auth
+# Step 1. Follow this to create certs
 # https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual
+# Step 2. Create a terraform.tfvars and fill out the variables
+# Step 3. terraform init and terraform plan/apply
+# Step 4. Copy the client private key and cert contents to the ovpn file.
 # Adopted from 
 # https://craig-godden-payne.medium.com/setup-managed-client-vpn-in-aws-using-terraform-342584d4f1e3
 
