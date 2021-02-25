@@ -18,6 +18,11 @@ IaC/aws/route53/terraform*
 IaC/aws/route53/.DS_Store
 IaC/aws/route53/provider/*
 IaC/aws/route53/tenant/*
+IaC/aws/external-dns/.terraform*
+IaC/aws/external-dns/terraform*
+IaC/aws/external-dns/.DS_Store
+IaC/aws/external-dns/provider/*
+IaC/aws/external-dns/tenant/*
 IaC/aws/tgw/.terraform*
 IaC/aws/tgw/terraform*
 IaC/aws/tgw/.DS_Store
@@ -31,3 +36,4 @@ IaC/gcp/enable-services/terraform*
 IaC/gcp/gce-fluentd-tf/.DS_Store
 IaC/gcp/gce-fluentd-tf/.terraform*
 IaC/gcp/gce-fluentd-tf/terraform*
+

@@ -159,6 +159,13 @@ resource "aws_eks_node_group" "saas-eks-node" {
   ]
 }
 
+#OIDC 
+# resource "aws_iam_openid_connect_provider" "cluster" {
+#   client_id_list  = ["sts.amazonaws.com"]
+#   thumbprint_list = []
+#   url             = aws_eks_cluster.cluster.identity.0.oidc.0.issuer
+# }
+
 resource "null_resource" "misc" {
 
   provisioner "local-exec" {
@@ -168,6 +175,19 @@ resource "null_resource" "misc" {
   provisioner "local-exec" {
     command = "kubectl create namespace argocd; kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
   }
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.14.1/controller.yaml"
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl apply -k github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-ebs-csi-driver/master/examples/kubernetes/dynamic-provisioning/specs/storageclass.yaml"
+  }
+  
 }
 
 # Outputs
