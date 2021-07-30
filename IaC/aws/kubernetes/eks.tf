@@ -181,7 +181,7 @@ resource "null_resource" "misc" {
   }
 
   provisioner "local-exec" {
-    command = "kubectl apply -k github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
+    command = "kubectl apply -k github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable"
   }
 
   provisioner "local-exec" {

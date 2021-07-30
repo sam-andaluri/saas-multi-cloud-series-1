@@ -1,4 +1,17 @@
-
+# BEFORE applying this module:
+# Create a secret with name docker, key-value pair of username: docker username, password: docker password
+#
+# AFTER applying this module, 
+# 1. codepipeline fails as there is no github connection.
+# https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html#connections-github-cli
+# 
+# 2. kubectl edit -n kube-system configmap/aws-auth
+# Add the following where ROLE is the value of "${var.ecr_repo}_role"
+#     - rolearn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<ROLE>
+#      username: <ROLE>
+#      groups:
+#        - system:masters        
+# 
 variable "github_user" {
   default = "github-user"
 }
@@ -25,7 +38,7 @@ variable "region" {
 }
 
 variable "eks_cluster_name" {
-  default = ""
+  default = "saas-eks"
 }
 
 provider "aws" {
@@ -34,15 +47,6 @@ provider "aws" {
 
 terraform {
   required_version = "~> 0.12"
-}
-
-# Random string to add to S3 bucket name to make it unique
-resource "random_string" "suffix" {
-  length  = 5
-  upper   = false
-  lower   = true
-  number  = false
-  special = false
 }
 
 data "aws_region" "current" {}
@@ -106,7 +110,7 @@ resource "aws_codepipeline" "codepipeline" {
 
 # This is not used but is required for code pipleline
 resource "aws_s3_bucket" "codepipeline_bucket" {
-  bucket        = "${var.github_repo}-${random_string.suffix.result}"
+  bucket        = var.github_repo
   acl           = "private"
   force_destroy = true
 }
@@ -147,10 +151,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
     {
       "Effect":"Allow",
       "Action": [
-        "s3:GetObject",
-        "s3:GetObjectVersion",
-        "s3:GetBucketVersioning",
-        "s3:PutObject"
+        "s3:*"
       ],
       "Resource": [
         "${aws_s3_bucket.codepipeline_bucket.arn}",
@@ -200,7 +201,8 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "ssm:GetParametersByPath",
         "ssm:GetParameters",
         "ssm:GetParameter",
-        "ssm:DescribeParameters"
+        "ssm:DescribeParameters",
+        "secretsmanager:*"
       ],
       "Resource": "*"
     },
@@ -222,6 +224,11 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 }
 EOF
 }
+
+data "aws_secretsmanager_secret_version" "docker_secrets" {
+  secret_id = "docker"
+}
+
 
 # CodeBuild project to build source. buildspec.yml is includes in source.
 resource "aws_codebuild_project" "saas-app-image-build" {
@@ -262,6 +269,16 @@ resource "aws_codebuild_project" "saas-app-image-build" {
     environment_variable {
       name  = "EKS_CLUSTER_NAME"
       value = var.eks_cluster_name
+    }
+    
+    environment_variable {
+      name  = "docker_user"
+      value = jsondecode(data.aws_secretsmanager_secret_version.docker_secrets.secret_string)["username"]
+    }
+    
+    environment_variable {
+      name  = "docker_password"
+      value = jsondecode(data.aws_secretsmanager_secret_version.docker_secrets.secret_string)["password"]
     }
   }
 
