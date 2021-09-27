@@ -13,6 +13,9 @@ IaC/aws/kubernetes/.DS_Store
 IaC/aws/client-vpn/.terraform*
 IaC/aws/client-vpn/terraform*
 IaC/aws/client-vpn/.DS_Store
+IaC/aws/ec2-rds-redis/.terraform*
+IaC/aws/ec2-rds-redis/terraform*
+IaC/aws/ec2-rds-redis/.DS_Store
 IaC/aws/route53/.terraform*
 IaC/aws/route53/terraform*
 IaC/aws/route53/.DS_Store

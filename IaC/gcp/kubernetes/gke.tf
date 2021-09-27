@@ -14,7 +14,7 @@ variable "gke_password" {
 }
 
 variable "gke_num_nodes" {
-  default     = 1
+  default     = 2
   description = "number of gke nodes"
 }
 
@@ -91,7 +91,7 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     preemptible  = true
-    machine_type = "n2-standard-4"
+    machine_type = "e2-standard-4"
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
